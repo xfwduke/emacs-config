@@ -35,6 +35,7 @@
  ;; If there is more than one, they won't work right.
  )
 
+(setq-default tab-width 4)
 (electric-pair-mode 1)
 (menu-bar-mode -1)
 (set-face-foreground 'minibuffer-prompt "white")
@@ -138,13 +139,13 @@
 (global-set-key (kbd "C-c ;") 'comment-or-uncomment-line-or-region)
 
 (use-package autoinsert
+  :ensure t
   :config
   (auto-insert-mode)
   (setq auto-insert-directory (concat (expand-file-name user-emacs-directory) "file_template"))
   (setq auto-insert-query nil)
   (add-to-list 'auto-insert-alist '(org-mode . "my-org-template.org"))
   (add-to-list 'auto-insert-alist '(python-mode . "my-python-template.py"))
-  :init
   (advice-add 'auto-insert :around #'yasnippet-expand-after-auto-insert)
   :preface
   (defun yasnippet-expand-after-auto-insert (orig-fun &rest args)
@@ -159,44 +160,30 @@
 	  (delete-region (point-min) old-point-max))))))
 
 (use-package which-func
+  :ensure t
+  :init
+  (which-function-mode t)
   :config
   (setq which-func-unknown " N/A ")
   (set-face-background 'which-func "white")
-  (set-face-foreground 'which-func "#0000ee")
-  (which-function-mode 1))
+  (set-face-foreground 'which-func "#0000ee"))
 
 (use-package linum-highlight-current-line-number
+  :ensure t
   :load-path "site-packages")
 
 (use-package linum
-  :config
-  (linum-mode 1))
-
-(use-package relative-line-numbers
-  :defer t
   :ensure t
   :init
-  (relative-line-numbers-mode 1)
-  :config
-  (global-relative-line-numbers-mode 0)
   (global-linum-mode t)
-  (setq relative-line-numbers-format (lambda (offset)
-				       (format " %03d " (abs offset))))
+  :config
   (if use-custom-solarized-dark-p
-      (progn
-	(set-face-background 'relative-line-numbers "black")
-	(set-face-background 'relative-line-numbers-current-line "black")
-	(set-face-background 'linum "black"))
-    (progn
-      (set-face-background 'relative-line-numbers "#1c1c1c")
-      (set-face-background 'relative-line-numbers-current-line "#1c1c1c")
-      (set-face-background 'linum "#1c1c1c")))
-  
-  (set-face-foreground 'relative-line-numbers "#005f5f")
-  (set-face-foreground 'relative-line-numbers-current-line "#bd3612")
+      (set-face-background 'linum "black")
+    (set-face-background 'linum "#1c1c1c"))
   (set-face-foreground 'linum "#005f5f"))
 
 (use-package highlight-current-line
+  :ensure t
   :config
   (global-hl-line-mode 1)
   (set-face-attribute hl-line-face
@@ -218,7 +205,6 @@
 
 (use-package tabbar
   :ensure t
-  :init
   :preface
   (defun ztl-modification-state-change ()
     (tabbar-set-template tabbar-current-tabset nil)
@@ -259,6 +245,7 @@
 		      :box '(:line-width 1 :color "#333333" :style nil)))
 
 (use-package uniquify
+  :ensure t
   :config
   (setq uniquify-buffer-name-style 'forward))
 
@@ -268,10 +255,12 @@
   (auto-save-buffers-enhanced t))
 
 (use-package unicad
+  :ensure t
   :load-path "site-packages")
 
 
 (use-package helm
+  :demand t
   :ensure t
   :config
   (helm-mode 1)
@@ -301,13 +290,13 @@
 	      ("i" . helm-semantic-or-imenu)))
 
 (use-package company
+  :demand t
   :ensure t
-  :init
-  (global-company-mode)
   :bind (:map company-active-map
 	      ("C-n" . company-select-next)
 	      ("C-p" . company-select-previous))
   :config
+  (global-company-mode)
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 2)
   (setq company-backends (remove 'company-clang company-backends))
@@ -320,72 +309,34 @@
   (yas-global-mode 1))
 
 (use-package company-yasnippet
+  :ensure t
   :defer t
   :config
   (with-eval-after-load 'company
     (add-to-list 'company-backends 'company-yasnippet)))
 
-;; (use-package company-go
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (with-eval-after-load 'company
-;;     (add-to-list 'company-backends 'company-go)
-;; 	(setq company-begin-commands '(self-insert-command)))
-;;   )
-
-;; (eval-and-compile
-;;   (defun go-flycheck-path ()
-;;     (concat (getenv "GOPATH") "/src/github.com/dougm/goflymake")))
 (use-package go-flycheck
+  :ensure t
   :defer t
   :load-path (lambda ()
 	       (list (concat (getenv "GOPATH") "src/github.com/dougm/goflymake")))
-  ;; :load-path (lambda () (list (go-flycheck-path)))
   :config
-  (global-flycheck-mode 1)
-  ;; :init (global-flycheck-mode)
-  )
+  (global-flycheck-mode 1))
 
-;; (use-package go-eldoc
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (dolist (hook '(go-mode-hook))
-;;     (add-hook hook 'go-eldoc-setup)))
-
-;; (use-package go-projectile
-;;   :defer t
-;;   :ensure t
-;;   ;; (setq helm-mode-no-completion-in-region-in-modes
-;;   ;; 		'(circe-channel-mode
-;;   ;; 		  circe-query-mode
-;;   ;; 		  circe-server-mode))
-;;   ;; :init
-;;   ;; (eval-after-load 'go-mode
-;;   ;; 	'(progn
-;;   ;; 	   (go-projectile-set-gopath)
-;;   ;; 	   (go-projectile-tools-add-path)))
-;;   )
-
-;; (use-package go-impl
-;;   :ensure t
-;;   :defer t
-;;   :after (helm)
-;;   :config
-;;   (with-eval-after-load 'helm
-;; 	(add-to-list 'helm-completing-read-handlers-alist '(go-impl . nil))))
+(use-package go-impl
+  :ensure t
+  :defer t
+  :after (helm)
+  :config
+  (add-to-list 'helm-completing-read-handlers-alist '(go-impl . nil)))
 
 (use-package go-mode
   :ensure t
   :defer t
-  :init
-  ;; (setq tab-width 4)
   :config
   (go-mode)
   (setq gofmt-command "goimports")
   (setq compile-command (concat "go build -v " buffer-file-name))
-  ;; (setq tab-width 4)
   (setq indent-tabs-mode 1)
   (add-to-list 'company-backends 'company-go)
   (setq company-begin-commands '(self-insert-command))
@@ -440,11 +391,13 @@
   :hook ((emacs-lisp-mode lisp-mode erlang-mode scheme-mode) . rainbow-delimiters-mode))
 
 (use-package elisp-mode
+  :ensure t
   :defer t
   :config
   (add-to-list 'company-backends 'company-elisp))
 
 (use-package erlang
+  :ensure t
   :defer t
   :bind (:map erlang-mode-map
 	      ("C-c l" . erlang-indent-current-buffer)
@@ -491,14 +444,10 @@
 
 (use-package elpy
   :ensure t
-  :defer t
-  :commands (elpy-mode)
   :config
   (setq elpy-rpc-backend "jedi")
   (setq elpy-rpc-python-command "python3")
-
   (setq python-shell-interpreter "ipython")
-  ;; (setq elpy-shell-interpreter "python3")
   (setq python-shell-interpreter-args "--simple-prompt --pprint")
   (elpy-enable)
   (unbind-key "C-c C-r f" elpy-mode-map)
@@ -507,21 +456,21 @@
 	      ("C-c C-l" . elpy-format-code)))
 
 (use-package dockerfile-mode
+  :ensure t
   :defer t
   :mode "Dockerfile\\'")
 
 (use-package org
+  :ensure t
   :defer t
-  :init
+  :config
   (setq org-confirm-babel-evaluate nil)
   (setq org-src-fontify-natively t)
   (setq org-startup-truncated nil)
   (setq org-html-validation-link nil)
   (setq org-html-htmlize-output-type 'css)
-  :preface
-  :config
   (org-babel-do-load-languages 'org-babel-load-languages
-			       '((sh . t)
+			       '((shell . t)
 				 (python . t)
 				 (erlang . t)
 				 (C . t)
@@ -548,12 +497,11 @@
   :mode (("README\\.md\\'" . gfm-mode)
 	 ("\\.md\\'" . markdown-mode)
 	 ("\\.markdown\\'" . markdown-mode))
-  :init
+  :config
   (setq markdown-command "multimarkdown")
   (setq markdown-css-paths '("/home/xfwduke/Documents/github-markdown.css"))
   (setq markdown-xhtml-body-preamble "<article class='markdown-body'>")
   (setq markdown-xhtml-body-epilogue "</article>")
-  
   (setq markdown-xhtml-header-content "
 <style>
 	.markdown-body {
@@ -570,8 +518,7 @@
   		}
   	}
 </style>
-")
-  )
+"))
 
 (provide 'init)
 ;;;
