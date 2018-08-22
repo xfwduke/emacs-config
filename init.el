@@ -28,6 +28,11 @@
    (quote
 	(benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip company-racer ob-rust x86-lookup racer flycheck-rust cargo rust-mode docker-compose-mode nasm-mode ob-go company-lua lua-mode org htmlize company-distel go-impl geiser company-erlang erlang flycheck-rebar3 company-go clang-format yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile company-c-headers company-irony company-irony-c-headers irony irony-eldoc go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides virtualenvwrapper helm-flycheck py-autopep8 flycheck elpy markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar slime-company relative-line-numbers buttercup))))
 
+(eval-when-compile
+  (require 'use-package))
+;; (require 'diminish)                ;; if you use :diminish
+(require 'bind-key)                ;; if you use any :bind variant
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
