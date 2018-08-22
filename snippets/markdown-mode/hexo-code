@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: hexo codeblock
+# key: hcode
+# --
+
+{% codeblock lang:${#LANG} ${#COMMENT} %}
+${#CODE-CONTENT}
+{% endcodeblock %}

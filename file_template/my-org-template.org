@@ -1,0 +1,2 @@
+#+TITLE: `(file-name-base (buffer-name))`
+#+AUTHOR: `user-full-name`
