@@ -26,7 +26,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (xclip company-racer ob-rust x86-lookup racer flycheck-rust cargo rust-mode docker-compose-mode nasm-mode ob-go company-lua lua-mode org htmlize company-distel go-impl geiser company-erlang erlang flycheck-rebar3 company-go clang-format yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile company-c-headers company-irony company-irony-c-headers irony irony-eldoc go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides virtualenvwrapper helm-flycheck py-autopep8 flycheck elpy markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar slime-company relative-line-numbers buttercup))))
+	(benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip company-racer ob-rust x86-lookup racer flycheck-rust cargo rust-mode docker-compose-mode nasm-mode ob-go company-lua lua-mode org htmlize company-distel go-impl geiser company-erlang erlang flycheck-rebar3 company-go clang-format yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile company-c-headers company-irony company-irony-c-headers irony irony-eldoc go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides virtualenvwrapper helm-flycheck py-autopep8 flycheck elpy markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar slime-company relative-line-numbers buttercup))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -34,7 +34,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
+;; (byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
 (setq-default tab-width 4)
 (electric-pair-mode 1)
 (menu-bar-mode -1)
@@ -42,22 +42,6 @@
 (setq inhibit-startup-screen t)
 (setq shell-file-name "/bin/bash")
 (add-to-list 'default-frame-alist '(font . "Source Code Pro-13"))
-(setq-default mode-line-format
-	      '(
-		"%e" mode-line-front-space
-		(:eval (concat "No." (window-numbering-get-number-string)))
-		" %l:%c  "
-		mode-line-modified
-		"  "
-		default-directory
-		"%b  "
-		(vc-mode vc-mode)
-		"  (%m)  "
-		(which-func-mode ("" which-func-format " "))
-		"%p"
-		"(%I)"
-		mode-line-end-spaces))
-
 (define-key input-decode-map "\e[1;5A" [C-up])
 (define-key input-decode-map "\e[1;5B" [C-down])
 (define-key input-decode-map "\e[1;5C" [C-right])
@@ -138,8 +122,44 @@
   (next-logical-line))
 (global-set-key (kbd "C-c ;") 'comment-or-uncomment-line-or-region)
 
+(use-package window-numbering
+  :config
+  (window-numbering-mode 1)
+  (window-numbering-clear-mode-line)
+  (setq-default
+   mode-line-format
+   '((:eval
+      (simple-mode-line-render
+       ;; left
+       (format-mode-line
+		(quote
+		 ("%e"
+		  mode-line-front-space
+		  (:eval (concat "No." (window-numbering-get-number-string)))
+          " [%l/%i:%c] "
+		  mode-line-modified
+		  " "
+		  default-directory
+		  "%b "
+		  (vc-mode vc-mode)
+		  " "
+          mode-line-misc-info
+		  )))
+       ;; right
+       (format-mode-line
+		(quote
+		 (
+		  "%m: "
+          mode-line-modes
+		  )
+		 ))))))
+  :preface
+  (defun simple-mode-line-render (left right)
+	"Return a string of `window-width' length containing LEFT, and RIGHT aligned respectively."
+	(let* ((available-width (- (window-width) (length left) 2)))
+      (format (format "%%s %%%ds" available-width) left right))))
+
 (use-package autoinsert
-  :ensure t
   :config
   (auto-insert-mode)
   (setq auto-insert-directory (concat (expand-file-name user-emacs-directory) "file_template"))
@@ -160,7 +180,7 @@
 	  (delete-region (point-min) old-point-max))))))
 
 (use-package which-func
-  :ensure t
+  :defer t
   :init
   (which-function-mode t)
   :config
@@ -169,11 +189,9 @@
   (set-face-foreground 'which-func "#0000ee"))
 
 (use-package linum-highlight-current-line-number
-  :ensure t
   :load-path "site-packages")
 
 (use-package linum
-  :ensure t
   :init
   (global-linum-mode t)
   :config
@@ -183,20 +201,15 @@
   (set-face-foreground 'linum "#005f5f"))
 
 (use-package highlight-current-line
-  :ensure t
   :config
   (global-hl-line-mode 1)
   (set-face-attribute hl-line-face
 		      nil
 		      :background "black"))
 
-(use-package window-numbering
-  :ensure t
-  :config
-  (window-numbering-mode 1))
+
 
 (use-package paren
-  :ensure t
   :config
   (show-paren-mode 1)
   (set-face-background 'show-paren-match "#00ff00")
@@ -204,7 +217,6 @@
   (set-face-attribute 'show-paren-match nil :weight 'extra-bold))
 
 (use-package tabbar
-  :ensure t
   :preface
   (defun ztl-modification-state-change ()
     (tabbar-set-template tabbar-current-tabset nil)
@@ -245,23 +257,19 @@
 		      :box '(:line-width 1 :color "#333333" :style nil)))
 
 (use-package uniquify
-  :ensure t
   :config
   (setq uniquify-buffer-name-style 'forward))
 
 (use-package auto-save-buffers-enhanced
-  :ensure t
   :config
   (auto-save-buffers-enhanced t))
 
 (use-package unicad
-  :ensure t
   :load-path "site-packages")
 
 
 (use-package helm
   :demand t
-  :ensure t
   :config
   (helm-mode 1)
   (require 'helm-config)
@@ -291,7 +299,6 @@
 
 (use-package company
   :demand t
-  :ensure t
   :bind (:map company-active-map
 	      ("C-n" . company-select-next)
 	      ("C-p" . company-select-previous))
@@ -304,19 +311,16 @@
   (setq company-backends (remove 'company-xcode company-backends)))
 
 (use-package yasnippet
-  :ensure t
   :config
   (yas-global-mode 1))
 
 (use-package company-yasnippet
-  :ensure t
   :defer t
   :config
   (with-eval-after-load 'company
     (add-to-list 'company-backends 'company-yasnippet)))
 
 (use-package go-flycheck
-  :ensure t
   :defer t
   :load-path (lambda ()
 	       (list (concat (getenv "GOPATH") "src/github.com/dougm/goflymake")))
@@ -324,14 +328,12 @@
   (global-flycheck-mode 1))
 
 (use-package go-impl
-  :ensure t
   :defer t
   :after (helm)
   :config
   (add-to-list 'helm-completing-read-handlers-alist '(go-impl . nil)))
 
 (use-package go-mode
-  :ensure t
   :defer t
   :config
   (go-mode)
@@ -378,7 +380,6 @@
 	  :buffer "*go-guru command*")))
 
 (use-package paredit
-  :ensure t
   :defer t
   :hook ((emacs-lisp-mode lisp-mode scheme-mode) . paredit-mode)
   :bind (:map paredit-mode-map
@@ -386,18 +387,15 @@
 	      ("C-<down>" . paredit-backward-barf-sexp)))
 
 (use-package rainbow-delimiters
-  :ensure t
   :defer t
   :hook ((emacs-lisp-mode lisp-mode erlang-mode scheme-mode) . rainbow-delimiters-mode))
 
 (use-package elisp-mode
-  :ensure t
   :defer t
   :config
   (add-to-list 'company-backends 'company-elisp))
 
 (use-package erlang
-  :ensure t
   :defer t
   :bind (:map erlang-mode-map
 	      ("C-c l" . erlang-indent-current-buffer)
@@ -442,8 +440,13 @@
 			       (funcall-interactively (intern candidate))))
 	  :buffer "*erlang-tempo command")))
 
+(use-package python-mode
+  :defer t
+  :config
+  (setq python-indent-offset 4))
+
 (use-package elpy
-  :ensure t
+  :defer t
   :config
   (setq elpy-rpc-backend "jedi")
   (setq elpy-rpc-python-command "python3")
@@ -456,12 +459,10 @@
 	      ("C-c C-l" . elpy-format-code)))
 
 (use-package dockerfile-mode
-  :ensure t
   :defer t
   :mode "Dockerfile\\'")
 
 (use-package org
-  :ensure t
   :defer t
   :config
   (setq org-confirm-babel-evaluate nil)
@@ -492,7 +493,6 @@
   :bind (("C-c o" . org-open-at-point)))
 
 (use-package markdown-mode
-  :ensure t
   :commands (markdown-mode gfm-mode)
   :mode (("README\\.md\\'" . gfm-mode)
 	 ("\\.md\\'" . markdown-mode)
@@ -519,6 +519,12 @@
   	}
 </style>
 "))
+
+;; (use-package benchmark-init
+;;   :init
+;;   (benchmark-init/activate)
+;;   :hook
+;;   (after-init . benchmark-init/deactivate))
 
 (provide 'init)
 ;;;
