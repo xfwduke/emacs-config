@@ -11,6 +11,6 @@ recentf
 *.pyc
 var/
 *.elc
-elpa/*
+# elpa/*
 HyperSpec
 
