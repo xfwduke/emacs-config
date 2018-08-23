@@ -26,7 +26,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-	(benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip company-racer ob-rust x86-lookup racer flycheck-rust cargo rust-mode docker-compose-mode nasm-mode ob-go company-lua lua-mode org htmlize company-distel go-impl geiser company-erlang erlang flycheck-rebar3 company-go clang-format yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile company-c-headers company-irony company-irony-c-headers irony irony-eldoc go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides virtualenvwrapper helm-flycheck py-autopep8 flycheck elpy markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar slime-company relative-line-numbers buttercup))))
+	(benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip company-racer ob-rust x86-lookup racer flycheck-rust cargo rust-mode docker-compose-mode nasm-mode ob-go company-lua lua-mode org htmlize go-impl geiser company-erlang erlang flycheck-rebar3 company-go clang-format yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile company-c-headers company-irony company-irony-c-headers irony irony-eldoc go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides virtualenvwrapper helm-flycheck py-autopep8 flycheck elpy markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar slime-company relative-line-numbers buttercup))))
 
 (eval-when-compile
   (require 'use-package))
@@ -72,7 +72,7 @@
 (xclip-mode +1)
 
 ;; backup will be inhibited if the file was tracked by Version Control (eg: git)
-(setq backup-file-dir (expand-file-name "~/.emacs_saves"))
+(defvar backup-file-dir (expand-file-name "~/.emacs_saves"))
 (unless (file-exists-p backup-file-dir)
   (make-directory backup-file-dir))
 
@@ -212,7 +212,13 @@
 		      nil
 		      :background "black"))
 
-
+(use-package flycheck
+  :defer t
+  :hook ((emacs-lisp-mode
+		  lisp-mode
+		  scheme-mode
+		  erlang-mode
+		  python-mode) . flycheck-mode))
 
 (use-package paren
   :config
@@ -406,6 +412,7 @@
 	      ("C-c l" . erlang-indent-current-buffer)
 	      ("C-c h o" . erlang-tempo-helm))
   :config
+  ;; (global-flycheck-mode)
   (setq inferior-erlang-machine-options '("-sname" "emacs"))
   (add-to-list 'company-backends 'company-erlang)
   (company-erlang-init)
