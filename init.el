@@ -26,7 +26,10 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-	(benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip company-racer ob-rust x86-lookup racer flycheck-rust cargo rust-mode docker-compose-mode nasm-mode ob-go company-lua lua-mode org htmlize go-impl geiser company-erlang erlang flycheck-rebar3 company-go clang-format yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile company-c-headers company-irony company-irony-c-headers irony irony-eldoc go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides virtualenvwrapper helm-flycheck py-autopep8 flycheck elpy markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar slime-company relative-line-numbers buttercup))))
+	(company-erlang company-distel benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip company-racer ob-rust x86-lookup racer flycheck-rust cargo rust-mode docker-compose-mode nasm-mode ob-go company-lua lua-mode org htmlize go-impl geiser company-go clang-format yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile company-c-headers company-irony company-irony-c-headers irony irony-eldoc go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides virtualenvwrapper helm-flycheck py-autopep8 flycheck elpy markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar slime-company relative-line-numbers buttercup))))
+
+(add-to-list 'load-path
+			 (car (file-expand-wildcards "/usr/local/lib/erlang/lib/tools-3.1/emacs")))
 
 (eval-when-compile
   (require 'use-package))
@@ -72,7 +75,7 @@
 (xclip-mode +1)
 
 ;; backup will be inhibited if the file was tracked by Version Control (eg: git)
-(defvar backup-file-dir (expand-file-name "~/.emacs_saves"))
+(setq backup-file-dir (expand-file-name "~/.emacs_saves"))
 (unless (file-exists-p backup-file-dir)
   (make-directory backup-file-dir))
 
@@ -212,13 +215,7 @@
 		      nil
 		      :background "black"))
 
-(use-package flycheck
-  :defer t
-  :hook ((emacs-lisp-mode
-		  lisp-mode
-		  scheme-mode
-		  erlang-mode
-		  python-mode) . flycheck-mode))
+
 
 (use-package paren
   :config
@@ -273,6 +270,7 @@
 
 (use-package auto-save-buffers-enhanced
   :config
+  (setq auto-save-buffers-enhanced-exclude-regexps '("Makefile"))
   (auto-save-buffers-enhanced t))
 
 (use-package unicad
@@ -406,18 +404,41 @@
   :config
   (add-to-list 'company-backends 'company-elisp))
 
+(use-package flycheck
+  :config
+  (add-hook 'after-init-hook 'global-flycheck-mode))
+
 (use-package erlang
   :defer t
+  :load-path "/usr/local/lib/erlang/lib/tools-3.1/emacs"
+  :mode (("\\.erl\\'" . erlang-mode))
   :bind (:map erlang-mode-map
 	      ("C-c l" . erlang-indent-current-buffer)
 	      ("C-c h o" . erlang-tempo-helm))
+  :custom
+  (erlang-root-dir "/usr/local/lib/erlang")
+  (erlang-man-root-dir "/usr/local/lib/erlang/man")
+  (ivy-erlang-complete-erlang-root "/usr/local/lib/erlang/")
   :config
-  ;; (global-flycheck-mode)
+  (add-hook 'erlang-mode-hook #'hook-fun)
+  (add-hook 'erlang-shell-mode-hook #'hook-fun)
+  (with-eval-after-load 'company
+	(add-to-list 'company-backends 'company-erlang))
+  (add-hook 'after-save-hook #'ivy-erlang-complete-reparse)
   (setq inferior-erlang-machine-options '("-sname" "emacs"))
-  (add-to-list 'company-backends 'company-erlang)
-  (company-erlang-init)
-  (ivy-erlang-complete-init)
+  (setq erl-nodename-cache
+  		(make-symbol
+  		 (concat
+  		  "emacs@"
+  		  (car (split-string (shell-command-to-string "hostname"))))))
   :preface
+  (defun hook-fun ()
+	(setq erlang-root-dir "/usr/local/lib/erlang")
+	(setq erlang-man-root-dir "/usr/local/lib/erlang/man")
+	(setq ivy-erlang-complete-erlang-root "/usr/local/lib/erlang/")
+	(company-erlang-init)
+	(ivy-erlang-complete-autosetup-project-root)
+	(define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common))
   (defun erlang-tempo-helm ()
     (interactive)
     (helm :sources (helm-build-in-buffer-source "erlang-tempo-helm"
@@ -532,11 +553,22 @@
 </style>
 "))
 
-;; (use-package benchmark-init
+(use-package benchmark-init
+  :disabled
+  :init
+  (benchmark-init/activate)
+  :hook
+  (after-init . benchmark-init/deactivate))
+
+;; (use-package makefile-mode
+;;   :defer t
 ;;   :init
-;;   (benchmark-init/activate)
-;;   :hook
-;;   (after-init . benchmark-init/deactivate))
+;;   ;; (setq indent-tabs-mode nil)
+;;   ;; (setq auto-save-buffers-enhanced-activity-flag nil)
+;;   ;; (setq-default indent-tabs-mode nil)
+;;   ;; (setq-default tab-always-indent t)
+;;   ;; (setq-default tab-width 2)
+;;   )
 
 (provide 'init)
 ;;;
