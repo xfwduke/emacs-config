@@ -1,1 +1,0 @@
-("~/.emacs.d/" "~/Code/GoLang/playground/")
