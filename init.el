@@ -26,7 +26,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-	(company-erlang benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip company-racer ob-rust x86-lookup racer flycheck-rust cargo rust-mode docker-compose-mode nasm-mode ob-go company-lua lua-mode org htmlize go-impl geiser company-go clang-format yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile company-c-headers company-irony company-irony-c-headers irony irony-eldoc go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides virtualenvwrapper helm-flycheck py-autopep8 flycheck elpy markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar slime-company relative-line-numbers buttercup))))
+	(hindent intero haskell-mode benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip x86-lookup docker-compose-mode ob-go org htmlize go-impl company-go yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides helm-flycheck flycheck markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar relative-line-numbers buttercup))))
 
 (add-to-list 'load-path
 			 (car (file-expand-wildcards "/usr/local/lib/erlang/lib/tools-3.1/emacs")))
@@ -495,6 +495,28 @@
 (use-package dockerfile-mode
   :defer t
   :mode "Dockerfile\\'")
+
+(use-package intero
+  :defer t
+  :hook ((haskell-mode hindent-mode) . intero-mode)
+  :init
+  (with-eval-after-load 'intero
+	(flycheck-add-next-checker 'intero 'haskell-ghc))
+  :config
+  (haskell-indentation-mode 0)
+  (haskell-indent-mode 0)
+  (hindent-mode 1)
+  :bind (:map intero-mode-map
+			  ("C-c l" . reformat-haskell)
+			  ("C-c C-c" . intero-repl-load)
+			  ("C-c p" . insert-type-before))
+  :preface
+  (defun insert-type-before ()
+	(interactive)
+	(intero-type-at `INSERT))
+  (defun reformat-haskell ()
+	(interactive)
+	(hindent-reformat-region (point-min) (point-max) nil)))
 
 (use-package org
   :defer t
