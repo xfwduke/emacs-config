@@ -509,8 +509,19 @@
   :bind (:map intero-mode-map
 			  ("C-c l" . reformat-haskell)
 			  ("C-c C-c" . intero-repl-load)
+			  ("C-c j" . my-hoogle)
 			  ("C-c p" . insert-type-before))
   :preface
+  (defun my-hoogle (query &optional info)
+	(interactive
+	 (let ((def (haskell-ident-at-point)))
+	   (if (and def (symbolp def)) (setq def (symbol-name def)))
+	   (list (read-string (if def
+							  (format "Hoogle query (default %s): " def)
+							"Hoogle query: ")
+						  nil nil def)
+			 current-prefix-arg)))
+	(hoogle query t))
   (defun insert-type-before ()
 	(interactive)
 	(intero-type-at `INSERT))
