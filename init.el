@@ -26,7 +26,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-	(hindent intero haskell-mode benchmark-init dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip x86-lookup docker-compose-mode ob-go org htmlize go-impl company-go yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile go-guru company go-mode spice-mode indent-guide graphviz-dot-mode color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides helm-flycheck flycheck markdown-mode helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar relative-line-numbers buttercup))))
+	(pyenv-mode pyenv-mode-auto company-jedi elpy hindent dockerfile-mode elisp-mode go-flycheck company-yasnippet unicad uniquify linum-highlight-current-line-number xclip x86-lookup ob-go org htmlize go-impl company-go yaml-mode helm-go-package sr-speedbar helm-cscope go-eldoc go-snippets syslog-mode auto-save-buffers-enhanced helm-projectile go-guru company go-mode spice-mode indent-guide color-theme-solarized rainbow-delimiters unicode-fonts highlight-indent-guides helm-flycheck flycheck helm use-package paredit systemtap-mode highlight-current-line window-numbering tabbar relative-line-numbers buttercup))))
 
 (add-to-list 'load-path
 			 (car (file-expand-wildcards "/usr/local/lib/erlang/lib/tools-3.1/emacs")))
@@ -283,18 +283,21 @@
   :config
   (helm-mode 1)
   (require 'helm-config)
-  (setq helm-split-window-inside-p           t
-	helm-semantic-fuzzy-match t
-	helm-imenu-fuzzy-match t
-	helm-buffers-fuzzy-matching t
-	helm-recentf-fuzzy-match t
-	helm-move-to-line-cycle-in-source     t
-	helm-ff-search-library-in-sexp t
-	helm-ff-file-name-history-use-recentf t
-	helm-M-x-fuzzy-match t
-	helm-echo-input-in-header-line t
-	helm-apropos-fuzzy-match t
-	helm-scroll-amount                    8)
+  (setq completion-styles `(basic partial-completion emacs22 initials
+								  ,(if (version<= emacs-version "27.0") 'helm-flex 'flex)))
+  (setq-default helm-semantic-fuzzy-match t)
+  (setq-default 	helm-imenu-fuzzy-match t )
+  (setq-default 	helm-buffers-fuzzy-matching t)
+  (setq-default 	helm-recentf-fuzzy-match t)
+  (setq-default	helm-move-to-line-cycle-in-source     t)
+  (setq-default 	helm-ff-search-library-in-sexp t)
+  (setq-default	helm-ff-file-name-history-use-recentf t)
+  (setq-default 	helm-M-x-fuzzy-match t)
+  (setq-default 	helm-apropos-fuzzy-match t)
+  (setq-default 	helm-echo-input-in-header-line t)
+  (setq-default				helm-scroll-amount                    8)
+  (setq-default helm-split-window-inside-p           t)
+  (setq-default helm-mode-fuzzy-match t)
   :bind (("M-x" . helm-M-x)
 	 ("C-s" . helm-occur)
 	 ("M-y" . helm-show-kill-ring)
@@ -409,125 +412,134 @@
   :config
   (add-hook 'after-init-hook 'global-flycheck-mode))
 
-(use-package erlang
-  :defer t
-  :load-path "/usr/local/lib/erlang/lib/tools-3.1/emacs"
-  :mode (("\\.erl\\'" . erlang-mode))
-  :bind (:map erlang-mode-map
-	      ("C-c l" . erlang-indent-current-buffer)
-	      ("C-c h o" . erlang-tempo-helm))
-  :custom
-  (erlang-root-dir "/usr/local/lib/erlang")
-  (erlang-man-root-dir "/usr/local/lib/erlang/man")
-  (ivy-erlang-complete-erlang-root "/usr/local/lib/erlang/")
-  :config
-  (add-hook 'erlang-mode-hook #'hook-fun)
-  (add-hook 'erlang-shell-mode-hook #'hook-fun)
-  (with-eval-after-load 'company
-	(add-to-list 'company-backends 'company-erlang))
-  (add-hook 'after-save-hook #'ivy-erlang-complete-reparse)
-  (setq inferior-erlang-machine-options '("-sname" "emacs"))
-  (setq erl-nodename-cache
-  		(make-symbol
-  		 (concat
-  		  "emacs@"
-  		  (car (split-string (shell-command-to-string "hostname"))))))
-  :preface
-  (defun hook-fun ()
-	(setq erlang-root-dir "/usr/local/lib/erlang")
-	(setq erlang-man-root-dir "/usr/local/lib/erlang/man")
-	(setq ivy-erlang-complete-erlang-root "/usr/local/lib/erlang/")
-	(company-erlang-init)
-	(ivy-erlang-complete-autosetup-project-root)
-	(define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common))
-  (defun erlang-tempo-helm ()
-    (interactive)
-    (helm :sources (helm-build-in-buffer-source "erlang-tempo-helm"
-		     :data '(tempo-template-erlang-if
-			     tempo-template-erlang-loop
-			     tempo-template-erlang-spec
-			     tempo-template-erlang-case
-			     tempo-template-erlang-after
-			     tempo-template-erlang-author
-			     tempo-template-erlang-module
-			     tempo-template-erlang-receive
-			     tempo-template-erlang-gen-lib
-			     tempo-template-erlang-gen-fsm
-			     tempo-template-erlang-function
-			     tempo-template-erlang-gen-event
-			     tempo-template-erlang-wx-object
-			     tempo-template-erlang-supervisor
-			     tempo-template-erlang-application
-			     tempo-template-erlang-gen-corba-cb
-			     tempo-template-erlang-large-header
-			     tempo-template-erlang-small-server
-			     tempo-template-erlang-small-header
-			     tempo-template-erlang-ts-test-suite
-			     tempo-template-erlang-normal-header
-			     tempo-template-erlang-generic-server
-			     tempo-template-erlang-ct-test-suite-l
-			     tempo-template-erlang-ct-test-suite-s
-			     tempo-template-erlang-supervisor-bridge
-			     tempo-template-erlang-gen-statem-StateName
-			     tempo-template-erlang-gen-statem-handle-event)
-		     :action (lambda (candidate)
-			       (funcall-interactively (intern candidate))))
-	  :buffer "*erlang-tempo command")))
+;; (use-package erlang
+;;   :defer t
+;;   :load-path "/usr/local/lib/erlang/lib/tools-3.1/emacs"
+;;   :mode (("\\.erl\\'" . erlang-mode))
+;;   :bind (:map erlang-mode-map
+;; 	      ("C-c l" . erlang-indent-current-buffer)
+;; 	      ("C-c h o" . erlang-tempo-helm))
+;;   :custom
+;;   (erlang-root-dir "/usr/local/lib/erlang")
+;;   (erlang-man-root-dir "/usr/local/lib/erlang/man")
+;;   (ivy-erlang-complete-erlang-root "/usr/local/lib/erlang/")
+;;   :config
+;;   (add-hook 'erlang-mode-hook #'hook-fun)
+;;   (add-hook 'erlang-shell-mode-hook #'hook-fun)
+;;   (with-eval-after-load 'company
+;; 	(add-to-list 'company-backends 'company-erlang))
+;;   (add-hook 'after-save-hook #'ivy-erlang-complete-reparse)
+;;   (setq inferior-erlang-machine-options '("-sname" "emacs"))
+;;   (setq erl-nodename-cache
+;;   		(make-symbol
+;;   		 (concat
+;;   		  "emacs@"
+;;   		  (car (split-string (shell-command-to-string "hostname"))))))
+;;   :preface
+;;   (defun hook-fun ()
+;; 	(setq erlang-root-dir "/usr/local/lib/erlang")
+;; 	(setq erlang-man-root-dir "/usr/local/lib/erlang/man")
+;; 	(setq ivy-erlang-complete-erlang-root "/usr/local/lib/erlang/")
+;; 	(company-erlang-init)
+;; 	(ivy-erlang-complete-autosetup-project-root)
+;; 	(define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common))
+;;   (defun erlang-tempo-helm ()
+;;     (interactive)
+;;     (helm :sources (helm-build-in-buffer-source "erlang-tempo-helm"
+;; 		     :data '(tempo-template-erlang-if
+;; 			     tempo-template-erlang-loop
+;; 			     tempo-template-erlang-spec
+;; 			     tempo-template-erlang-case
+;; 			     tempo-template-erlang-after
+;; 			     tempo-template-erlang-author
+;; 			     tempo-template-erlang-module
+;; 			     tempo-template-erlang-receive
+;; 			     tempo-template-erlang-gen-lib
+;; 			     tempo-template-erlang-gen-fsm
+;; 			     tempo-template-erlang-function
+;; 			     tempo-template-erlang-gen-event
+;; 			     tempo-template-erlang-wx-object
+;; 			     tempo-template-erlang-supervisor
+;; 			     tempo-template-erlang-application
+;; 			     tempo-template-erlang-gen-corba-cb
+;; 			     tempo-template-erlang-large-header
+;; 			     tempo-template-erlang-small-server
+;; 			     tempo-template-erlang-small-header
+;; 			     tempo-template-erlang-ts-test-suite
+;; 			     tempo-template-erlang-normal-header
+;; 			     tempo-template-erlang-generic-server
+;; 			     tempo-template-erlang-ct-test-suite-l
+;; 			     tempo-template-erlang-ct-test-suite-s
+;; 			     tempo-template-erlang-supervisor-bridge
+;; 			     tempo-template-erlang-gen-statem-StateName
+;; 			     tempo-template-erlang-gen-statem-handle-event)
+;; 		     :action (lambda (candidate)
+;; 			       (funcall-interactively (intern candidate))))
+;; 	  :buffer "*erlang-tempo command")))
 
 (use-package python-mode
   :defer t
+  ;; ;; :hook ((elpy-mode pyenv-mode) . python-mode)
+  ;; :mode ("\\.py\\'" . python-mode)
   :config
-  (setq python-indent-offset 4))
+  ;; (pyenv-mode)
+  (setq-default python-indent-offset 4))
+
+(use-package pyenv-mode
+  :defer t
+  :hook (python-mode . pyenv-mode))
 
 (use-package elpy
   :defer t
+  :hook (python-mode . elpy-mode)
   :config
-  (setq elpy-rpc-backend "jedi")
-  (setq elpy-rpc-python-command "python3")
-  (setq python-shell-interpreter "ipython")
-  (setq python-shell-interpreter-args "--simple-prompt --pprint")
+  (setq-default elpy-rpc-backend "jedi")
+  (setq elpy-rpc-python-command "python")
+  (setq python-shell-interpreter "python")
+  ;; (setq python-shell-interpreter-args "--no-simple-prompt --no-banner --pprint")
+  (setq elpy-rpc-virtualenv-path 'current)
   (elpy-enable)
   (unbind-key "C-c C-r f" elpy-mode-map)
   :bind (:map elpy-mode-map
 	      ("C-c l" . elpy-format-code)
 	      ("C-c C-l" . elpy-format-code)))
 
-(use-package dockerfile-mode
-  :defer t
-  :mode "Dockerfile\\'")
+;; (use-package dockerfile-mode
+;;   :defer t
+;;   :mode "Dockerfile\\'")
 
-(use-package intero
-  :defer t
-  :hook ((haskell-mode hindent-mode) . intero-mode)
-  :init
-  (with-eval-after-load 'intero
-	(flycheck-add-next-checker 'intero 'haskell-ghc))
-  :config
-  (haskell-indentation-mode 0)
-  (haskell-indent-mode 0)
-  (hindent-mode 1)
-  :bind (:map intero-mode-map
-			  ("C-c l" . reformat-haskell)
-			  ("C-c C-c" . intero-repl-load)
-			  ("C-c j" . my-hoogle)
-			  ("C-c p" . insert-type-before))
-  :preface
-  (defun my-hoogle (query &optional info)
-	(interactive
-	 (let ((def (haskell-ident-at-point)))
-	   (if (and def (symbolp def)) (setq def (symbol-name def)))
-	   (list (read-string (if def
-							  (format "Hoogle query (default %s): " def)
-							"Hoogle query: ")
-						  nil nil def)
-			 current-prefix-arg)))
-	(hoogle query t))
-  (defun insert-type-before ()
-	(interactive)
-	(intero-type-at `INSERT))
-  (defun reformat-haskell ()
-	(interactive)
-	(hindent-reformat-region (point-min) (point-max) nil)))
+;; (use-package intero
+;;   :defer t
+;;   :hook ((haskell-mode hindent-mode) . intero-mode)
+;;   :init
+;;   (with-eval-after-load 'intero
+;; 	(flycheck-add-next-checker 'intero 'haskell-ghc))
+;;   :config
+;;   (haskell-indentation-mode 0)
+;;   (haskell-indent-mode 0)
+;;   (hindent-mode 1)
+;;   :bind (:map intero-mode-map
+;; 			  ("C-c l" . reformat-haskell)
+;; 			  ("C-c C-c" . intero-repl-load)
+;; 			  ("C-c j" . my-hoogle)
+;; 			  ("C-c p" . insert-type-before))
+;;   :preface
+;;   (defun my-hoogle (query &optional info)
+;; 	(interactive
+;; 	 (let ((def (haskell-ident-at-point)))
+;; 	   (if (and def (symbolp def)) (setq def (symbol-name def)))
+;; 	   (list (read-string (if def
+;; 							  (format "Hoogle query (default %s): " def)
+;; 							"Hoogle query: ")
+;; 						  nil nil def)
+;; 			 current-prefix-arg)))
+;; 	(hoogle query t))
+;;   (defun insert-type-before ()
+;; 	(interactive)
+;; 	(intero-type-at `INSERT))
+;;   (defun reformat-haskell ()
+;; 	(interactive)
+;; 	(hindent-reformat-region (point-min) (point-max) nil)))
 
 (use-package org
   :defer t
@@ -535,8 +547,8 @@
   (setq org-confirm-babel-evaluate nil)
   (setq org-src-fontify-natively t)
   (setq org-startup-truncated nil)
-  (setq org-html-validation-link nil)
-  (setq org-html-htmlize-output-type 'css)
+  (setq-default org-html-validation-link nil)
+  (setq-default org-html-htmlize-output-type 'css)
   (org-babel-do-load-languages 'org-babel-load-languages
 			       '((shell . t)
 				 (python . t)
@@ -547,52 +559,52 @@
 				 (ditaa . t)
 				 (go . t)
 				 (matlab . t)))
-  (setq org-ditaa-jar-path "/usr/share/ditaa/ditaa.jar")
-  (set-face-foreground 'org-meta-line "#585858")
-  (set-face-foreground 'org-block "#bcbcbc")
-  (set-face-foreground 'org-document-info-keyword "#585858")
-  (set-face-foreground 'org-document-info "#585858")
-  (set-face-foreground 'org-document-title "white")
-  (set-face-foreground 'org-table "#00afd7")
-  (set-face-foreground 'org-code "#00af5f")
-  (add-to-list 'org-structure-template-alist
-	       '("cpp" "#+header: :results output\n#+header: :exports both\n#+header: :tangle no\n#+header: :flags -std=c++17 -Isrc\n#+header: :includes \n#+header: :namespaces std\n#+header: :main no\n#+BEGIN_SRC C++ -r -l \"//\(ref:%s\)\"\n?\n#+END_SRC" ""))
+  ;; (setq-default org-ditaa-jar-path "/usr/share/ditaa/ditaa.jar")
+  ;; (set-face-foreground 'org-meta-line "#585858")
+  ;; (set-face-foreground 'org-block "#bcbcbc")
+  ;; (set-face-foreground 'org-document-info-keyword "#585858")
+  ;; (set-face-foreground 'org-document-info "#585858")
+  ;; (set-face-foreground 'org-document-title "white")
+  ;; (set-face-foreground 'org-table "#00afd7")
+  ;; (set-face-foreground 'org-code "#00af5f")
+  ;; (add-to-list 'org-structure-template-alist
+  ;; 	       '("cpp" "#+header: :results output\n#+header: :exports both\n#+header: :tangle no\n#+header: :flags -std=c++17 -Isrc\n#+header: :includes \n#+header: :namespaces std\n#+header: :main no\n#+BEGIN_SRC C++ -r -l \"//\(ref:%s\)\"\n?\n#+END_SRC" ""))
   :bind (("C-c o" . org-open-at-point)))
 
-(use-package markdown-mode
-  :commands (markdown-mode gfm-mode)
-  :mode (("README\\.md\\'" . gfm-mode)
-	 ("\\.md\\'" . markdown-mode)
-	 ("\\.markdown\\'" . markdown-mode))
-  :config
-  (setq markdown-command "multimarkdown")
-  (setq markdown-css-paths '("/home/xfwduke/Documents/github-markdown.css"))
-  (setq markdown-xhtml-body-preamble "<article class='markdown-body'>")
-  (setq markdown-xhtml-body-epilogue "</article>")
-  (setq markdown-xhtml-header-content "
-<style>
-	.markdown-body {
-  		box-sizing: border-box;
-  		min-width: 200px;
-  		max-width: 980px;
-  		margin: 0 auto;
-  		padding: 45px;
-  	}
+;; (use-package markdown-mode
+;;   :commands (markdown-mode gfm-mode)
+;;   :mode (("README\\.md\\'" . gfm-mode)
+;; 	 ("\\.md\\'" . markdown-mode)
+;; 	 ("\\.markdown\\'" . markdown-mode))
+;;   :config
+;;   (setq markdown-command "multimarkdown")
+;;   (setq markdown-css-paths '("/home/xfwduke/Documents/github-markdown.css"))
+;;   (setq markdown-xhtml-body-preamble "<article class='markdown-body'>")
+;;   (setq markdown-xhtml-body-epilogue "</article>")
+;;   (setq markdown-xhtml-header-content "
+;; <style>
+;; 	.markdown-body {
+;;   		box-sizing: border-box;
+;;   		min-width: 200px;
+;;   		max-width: 980px;
+;;   		margin: 0 auto;
+;;   		padding: 45px;
+;;   	}
 
-  	@media (max-width: 767px) {
-  		.markdown-body {
-  			padding: 15px;
-  		}
-  	}
-</style>
-"))
+;;   	@media (max-width: 767px) {
+;;   		.markdown-body {
+;;   			padding: 15px;
+;;   		}
+;;   	}
+;; </style>
+;; "))
 
-(use-package benchmark-init
-  :disabled
-  :init
-  (benchmark-init/activate)
-  :hook
-  (after-init . benchmark-init/deactivate))
+;; (use-package benchmark-init
+;;   :disabled
+;;   :init
+;;   (benchmark-init/activate)
+;;   :hook
+;;   (after-init . benchmark-init/deactivate))
 
 ;; (use-package makefile-mode
 ;;   :defer t
