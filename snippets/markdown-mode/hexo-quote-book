@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: hexo quote book
-# key: hqb
-# --
-
-{% blockquote ${#AUTHORS}, ${#BOOK} %}
-${#CONTENT}
-{% endblockquote %}
