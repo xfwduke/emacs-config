@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: hexo quote link
+# key: hql
+# --
+
+{% blockquote @${#TITLE} ${#LINK} %}
+${#CONTENT}
+{% endblockquote %}
